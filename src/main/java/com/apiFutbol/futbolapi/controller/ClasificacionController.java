@@ -20,7 +20,7 @@ public class ClasificacionController {
     @Autowired
     private ClasificacionService clasificacionService;
 
-    @GetMapping
+    @GetMapping("/equipo/tabla")
     public List<Clasificacion> obtenerTabla() {
         return clasificacionService.obtenerTabla();
     }

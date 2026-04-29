@@ -45,7 +45,7 @@ public class EquipoController {
         return equipoService.guardar(equipo);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         equipoService.eliminar(id);
         return ResponseEntity.noContent().build();
