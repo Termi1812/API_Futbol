@@ -1,5 +1,6 @@
 package com.apiFutbol.futbolapi.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,7 +15,11 @@ public class Equipo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
+    private Long externalId;
+
     private String nombre;
-    private String ciudad;
+    private String escudo;
     private String estadio;
 }
