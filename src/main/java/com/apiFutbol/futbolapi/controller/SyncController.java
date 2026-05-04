@@ -18,4 +18,9 @@ public class SyncController {
     public String sincronizarEquipos() {
         return syncService.sincronizarEquipos();
     }
+
+    @PostMapping("/clasificacion")
+    public String sincronizarClasificacion() {
+        return syncService.sincronizarClasificacion();
+    }
 }

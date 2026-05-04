@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.apiFutbol.futbolapi.model.Clasificacion;
 import com.apiFutbol.futbolapi.model.Equipo;
+import com.apiFutbol.futbolapi.repository.ClasificacionRepository;
 import com.apiFutbol.futbolapi.repository.EquipoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class SyncService {
 
+    @Autowired
+    private ClasificacionRepository clasificacionRepository;
     @Autowired
     private EquipoRepository equipoRepository;
 
@@ -70,6 +74,42 @@ public class SyncService {
 
         } catch (Exception e) {
             return "Error sincronizando equipos: " + e.getMessage();
+        }
+    }
+
+    @Transactional
+    public String sincronizarClasificacion() {
+        try {
+            clasificacionRepository.deleteAll();
+            entityManager.createNativeQuery("ALTER SEQUENCE clasificacion_id_seq RESTART WITH 1").executeUpdate();
+
+            String response = webClient.get()
+                    .uri("/competitions/PD/standings")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode standings = root.get("standings").get(0).get("table");
+
+            int contador = 0;
+            for (JsonNode entry : standings) {
+                Long externalId = entry.get("team").get("id").asLong();
+
+                equipoRepository.findByExternalId(externalId).ifPresent(equipo -> {
+                    Clasificacion clasificacion = new Clasificacion();
+                    clasificacion.setEquipo(equipo);
+                    clasificacion.setPosicion(entry.get("position").asInt());
+                    clasificacion.setPuntos(entry.get("points").asInt());
+                    clasificacionRepository.save(clasificacion);
+                });
+                contador++;
+            }
+
+            return "Clasificacion sincronizada correctamente: " + contador + " equipos";
+
+        } catch (Exception e) {
+            return "Error sincronizando clasificacion: " + e.getMessage();
         }
     }
 }
