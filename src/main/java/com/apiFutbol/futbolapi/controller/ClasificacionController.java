@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apiFutbol.futbolapi.model.Clasificacion;
@@ -20,15 +19,14 @@ public class ClasificacionController {
     @Autowired
     private ClasificacionService clasificacionService;
 
-    @GetMapping("/equipo/tabla")
+    @GetMapping("/tabla")
     public List<Clasificacion> obtenerTabla() {
         return clasificacionService.obtenerTabla();
     }
 
     @GetMapping("/equipo/{equipoId}")
     public ResponseEntity<Clasificacion> obtenerPosicionEquipo(
-            @PathVariable Long equipoId,
-            @RequestParam String temporada) {
+            @PathVariable Long equipoId) {
         return clasificacionService.obtenerPosicionEquipo(equipoId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
