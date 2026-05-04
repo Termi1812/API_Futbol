@@ -23,4 +23,8 @@ public class SyncController {
     public String sincronizarClasificacion() {
         return syncService.sincronizarClasificacion();
     }
+    @PostMapping("/partidos")
+    public String sincronizarPartidos() {
+        return syncService.sincronizarPartidos();
+    }
 }

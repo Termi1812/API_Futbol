@@ -1,5 +1,8 @@
 package com.apiFutbol.futbolapi.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -8,8 +11,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.apiFutbol.futbolapi.model.Clasificacion;
 import com.apiFutbol.futbolapi.model.Equipo;
+import com.apiFutbol.futbolapi.model.Partido;
 import com.apiFutbol.futbolapi.repository.ClasificacionRepository;
 import com.apiFutbol.futbolapi.repository.EquipoRepository;
+import com.apiFutbol.futbolapi.repository.PartidoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,6 +25,8 @@ public class SyncService {
     private ClasificacionRepository clasificacionRepository;
     @Autowired
     private EquipoRepository equipoRepository;
+    @Autowired
+    private PartidoRepository partidoRepository;
 
     @Autowired
     private jakarta.persistence.EntityManager entityManager;
@@ -110,6 +117,48 @@ public class SyncService {
 
         } catch (Exception e) {
             return "Error sincronizando clasificacion: " + e.getMessage();
+        }
+    }
+    @Transactional
+    public String sincronizarPartidos() {
+        try {
+            partidoRepository.deleteAll();
+            entityManager.createNativeQuery("ALTER SEQUENCE partido_id_seq RESTART WITH 1").executeUpdate();
+
+            LocalDateTime desde = LocalDateTime.now();
+            LocalDateTime hasta = LocalDateTime.now().plusDays(4);
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            String response = webClient.get()
+                    .uri("/competitions/PD/matches?dateFrom=" + desde.format(fmt) + "&dateTo=" + hasta.format(fmt))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode matches = root.get("matches");
+
+            int contador = 0;
+            for (JsonNode match : matches) {
+                Long localExternalId = match.get("homeTeam").get("id").asLong();
+                Long visitanteExternalId = match.get("awayTeam").get("id").asLong();
+
+                Partido partido = new Partido();
+
+                equipoRepository.findByExternalId(localExternalId).ifPresent(partido::setEquipoLocal);
+                equipoRepository.findByExternalId(visitanteExternalId).ifPresent(partido::setEquipoVisitante);
+
+                String fechaStr = match.get("utcDate").asText().replace("Z", "");
+                partido.setFecha(LocalDateTime.parse(fechaStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+                partidoRepository.save(partido);
+                contador++;
+            }
+
+            return "Partidos sincronizados correctamente: " + contador;
+
+        } catch (Exception e) {
+            return "Error sincronizando partidos: " + e.getMessage();
         }
     }
 }

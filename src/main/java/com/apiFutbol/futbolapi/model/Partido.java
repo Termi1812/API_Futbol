@@ -28,5 +28,4 @@ public class Partido {
     private Equipo equipoVisitante;
 
     private LocalDateTime fecha;
-    private String estadio;
 }
