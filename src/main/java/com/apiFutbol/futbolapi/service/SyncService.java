@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -41,17 +42,28 @@ public class SyncService {
                 .defaultHeader("X-Auth-Token", apiToken)
                 .build();
     }
-
-    private void resetSequence() {
-        entityManager.createNativeQuery("ALTER SEQUENCE equipo_id_seq RESTART WITH 1").executeUpdate();
+    // Metodo para limpiar las tablas antes de sincronizar
+    @Transactional
+    private void limpiarTablas() {
+        entityManager.createNativeQuery("TRUNCATE TABLE partido, clasificacion, equipo RESTART IDENTITY CASCADE").executeUpdate();
+    }
+    @Scheduled(cron = "0 0 4 * * *") // Ejecutar cada día a las 06:00 AM (Hora española)
+    @Transactional
+    public void sincronizarTodo() {
+        try {
+            limpiarTablas();
+            sincronizarEquipos();
+            sincronizarClasificacion();
+            sincronizarPartidos();
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Transactional
-    public String sincronizarEquipos() {
+    private String sincronizarEquipos() {
         try {
-            equipoRepository.deleteAll();
-            resetSequence();
-
             String response = webClient.get()
                     .uri("/competitions/PD/teams")
                     .retrieve()
@@ -85,11 +97,8 @@ public class SyncService {
     }
 
     @Transactional
-    public String sincronizarClasificacion() {
+    private String sincronizarClasificacion() {
         try {
-            clasificacionRepository.deleteAll();
-            entityManager.createNativeQuery("ALTER SEQUENCE clasificacion_id_seq RESTART WITH 1").executeUpdate();
-
             String response = webClient.get()
                     .uri("/competitions/PD/standings")
                     .retrieve()
@@ -120,11 +129,8 @@ public class SyncService {
         }
     }
     @Transactional
-    public String sincronizarPartidos() {
+    private String sincronizarPartidos() {
         try {
-            partidoRepository.deleteAll();
-            entityManager.createNativeQuery("ALTER SEQUENCE partido_id_seq RESTART WITH 1").executeUpdate();
-
             LocalDateTime desde = LocalDateTime.now();
             LocalDateTime hasta = LocalDateTime.now().plusDays(4);
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
