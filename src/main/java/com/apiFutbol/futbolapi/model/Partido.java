@@ -28,4 +28,6 @@ public class Partido {
     private Equipo equipoVisitante;
 
     private LocalDateTime fecha;
+    private Integer golesLocal;
+    private Integer golesVisitante;
 }

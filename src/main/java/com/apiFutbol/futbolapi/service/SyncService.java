@@ -138,7 +138,7 @@ public class SyncService {
     @Transactional
     private String sincronizarPartidos() {
         try {
-            LocalDateTime desde = LocalDateTime.now();
+            LocalDateTime desde = LocalDateTime.now().minusDays(4);
             LocalDateTime hasta = LocalDateTime.now().plusDays(4);
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -163,6 +163,16 @@ public class SyncService {
 
                 String fechaStr = match.get("utcDate").asText().replace("Z", "");
                 partido.setFecha(LocalDateTime.parse(fechaStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+                // Guardar resultado si el partido está finalizado
+                String status = match.get("status").asText();
+                if (status.equals("FINISHED")) {
+                    JsonNode fullTime = match.get("score").get("fullTime");
+                    if (!fullTime.get("home").isNull() && !fullTime.get("away").isNull()) {
+                        partido.setGolesLocal(fullTime.get("home").asInt());
+                        partido.setGolesVisitante(fullTime.get("away").asInt());
+                    }
+                }
 
                 partidoRepository.save(partido);
                 contador++;
