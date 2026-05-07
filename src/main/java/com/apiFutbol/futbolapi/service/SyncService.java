@@ -117,6 +117,13 @@ public class SyncService {
                     clasificacion.setEquipo(equipo);
                     clasificacion.setPosicion(entry.get("position").asInt());
                     clasificacion.setPuntos(entry.get("points").asInt());
+                    clasificacion.setPartidosJugados(entry.get("playedGames").asInt());
+                    clasificacion.setPartidosGanados(entry.get("won").asInt());
+                    clasificacion.setPartidosEmpatados(entry.get("draw").asInt());
+                    clasificacion.setPartidosPerdidos(entry.get("lost").asInt());
+                    clasificacion.setGolesFavor(entry.get("goalsFor").asInt());
+                    clasificacion.setGolesContra(entry.get("goalsAgainst").asInt());
+                    clasificacion.setDiferenciaGoles(entry.get("goalDifference").asInt());
                     clasificacionRepository.save(clasificacion);
                 });
                 contador++;

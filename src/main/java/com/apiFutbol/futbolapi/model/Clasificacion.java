@@ -22,5 +22,11 @@ public class Clasificacion {
     private Equipo equipo;
     private int posicion;
     private int puntos;
-
+    private int partidosJugados;
+    private int partidosGanados;
+    private int partidosEmpatados;
+    private int partidosPerdidos;
+    private int golesFavor;
+    private int golesContra;
+    private int diferenciaGoles;
 }
