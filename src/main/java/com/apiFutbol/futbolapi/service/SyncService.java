@@ -47,8 +47,10 @@ public class SyncService {
     private void limpiarTablas() {
         entityManager.createNativeQuery("TRUNCATE TABLE partido, clasificacion, equipo RESTART IDENTITY CASCADE").executeUpdate();
     }
-    @Scheduled(cron = "0 0 4 * * *") // Ejecutar cada día a las 06:00 AM (Hora española)
-    @Scheduled(cron = "0 0 16 * * *") // Ejecutar cada día a las 06:00 PM (Hora española)
+    @Scheduled(
+    cron = "0 0 6,18 * * *",
+    zone = "Europe/Madrid"
+    )// Ejecutar cada 12 horas a las 6:00 y 18:00 hora de Madrid
     @Transactional
     public void sincronizarTodo() {
         try {
