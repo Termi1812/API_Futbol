@@ -106,6 +106,13 @@ public class SyncService {
                     .block();
 
             JsonNode root = objectMapper.readTree(response);
+            String temporadaActual = root.get("filters").get("season").asText();
+            response = webClient.get()
+                    .uri("/competitions/PD/standings?season=" + temporadaActual)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            root = objectMapper.readTree(response);
             JsonNode standings = root.get("standings").get(0).get("table");
 
             int contador = 0;

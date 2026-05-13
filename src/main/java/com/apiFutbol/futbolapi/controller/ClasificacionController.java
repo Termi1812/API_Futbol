@@ -19,6 +19,11 @@ public class ClasificacionController {
     @Autowired
     private ClasificacionService clasificacionService;
 
+    @GetMapping("/temporadaActual")
+    public String obtenerTemporadaActual() {
+        return clasificacionService.obtenerTemporadaActual().get();
+    }
+
     @GetMapping("/tabla")
     public List<Clasificacion> obtenerTabla() {
         return clasificacionService.obtenerTabla();
