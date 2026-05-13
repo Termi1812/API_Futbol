@@ -32,4 +32,8 @@ public class PartidoController {
     public List<Partido> obtenerPartidosEquipo(@PathVariable Long equipoId) {
         return partidoService.obtenerPartidosEquipo(equipoId);
     }
+    @GetMapping("/equipo/{equipoId}/proximos")
+    public List<Partido> obtenerPartidosProximosEquipo(@PathVariable Long equipoId) {
+        return partidoService.obtenerPartidosProximosEquipo(equipoId);
+    }
 }

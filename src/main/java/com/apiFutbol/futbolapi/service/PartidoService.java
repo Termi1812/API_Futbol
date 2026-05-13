@@ -26,4 +26,7 @@ public class PartidoService {
     public List<Partido> obtenerResultados() {
         return partidoRepository.obtenerResultados(LocalDateTime.now());
     }
+    public List<Partido> obtenerPartidosProximosEquipo(Long equipoId) {
+        return partidoRepository.obtenerPartidosProximosEquipo(equipoId, LocalDateTime.now());
+    }
 }

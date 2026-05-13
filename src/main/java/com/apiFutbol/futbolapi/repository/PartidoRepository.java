@@ -21,4 +21,7 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 
     @Query("SELECT p FROM Partido p WHERE p.fecha < :fecha ORDER BY p.fecha DESC")
     List<Partido> obtenerResultados(@Param("fecha") LocalDateTime fecha);
+
+    @Query("SELECT p FROM Partido p WHERE (p.equipoLocal.id = :equipoId OR p.equipoVisitante.id = :equipoId) AND p.fecha > :fecha ORDER BY p.fecha ASC")
+    List<Partido> obtenerPartidosProximosEquipo(@Param("equipoId") Long equipoId, @Param("fecha") LocalDateTime fecha);
 }
